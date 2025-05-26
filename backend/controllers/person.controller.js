@@ -1,14 +1,22 @@
 import fetch from 'node-fetch';
+import films from '../data/films.json' assert { type: 'json' };
 
 const BASE_URL = 'https://www.swapi.tech/api';
 
+// Simple in-memory cache
+const cache = new Map();
+
 const fetchNameFromUrl = async (url) => {
   if (!url) return null;
+  if (cache.has(url)) return cache.get(url);
+
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to fetch ${url}`);
     const data = await res.json();
-    return data.result.properties.name || data.result.properties.title || null;
+    const name = data.result.properties.name || data.result.properties.title || null;
+    cache.set(url, name);
+    return name;
   } catch {
     return null;
   }
@@ -16,39 +24,39 @@ const fetchNameFromUrl = async (url) => {
 
 const getFilmsForCharacter = async (personId) => {
   try {
-    const res = await fetch(`${BASE_URL}/films`);
-    const data = await res.json();
+    //const res = await fetch(`${BASE_URL}/films`);
+ //   const data = await res.json();
+    const allFilms = films.result;
 
-    const allFilms = data.result;
-let films = [];
     const personUrl = `${BASE_URL}/people/${personId}`;
-
-    allFilms
+    
+    // No need to refetch film details
+    return allFilms
       .filter(film => film.properties?.characters.includes(personUrl))
-      .map(film =>{ 
-        
-        films.push(film.properties?.title)});
-
-return films;
+      .map(film => film.properties.title);
   } catch {
     return [];
   }
 };
 
 export const fetchPersonById = async (id) => {
-  const res = await fetch(`${BASE_URL}/people/${id}`);
+  const url = `${BASE_URL}/people/${id}`;
+  if (cache.has(url)) return cache.get(url);
+
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
-  return res.json();
+  const data = await res.json();
+  cache.set(url, data);
+  return data;
 };
 
-export const fetchPeople = async ({ page, limit,name }) => {
+export const fetchPeople = async ({ page, limit, name }) => {
   const queryParams = new URLSearchParams();
   if (page) queryParams.append('page', page);
   if (limit) queryParams.append('limit', limit);
-if (name) queryParams.append('name', name);
+  if (name) queryParams.append('name', name);
+
   const url = `${BASE_URL}/people?${queryParams.toString()}`;
-  console.log(url);
-  
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
   return res.json();
@@ -63,21 +71,27 @@ export const getPerson = async (id) => {
 
   const p = data.result.properties;
 
+  // Run homeworld and films in parallel
+  const [homeworld, films] = await Promise.all([
+    fetchNameFromUrl(p.homeworld),
+    getFilmsForCharacter(id)
+  ]);
+
   return {
     id,
     name: p.name,
     gender: p.gender,
     birthYear: p.birth_year,
-    homeworld: await fetchNameFromUrl(p.homeworld),
+    homeworld,
     eye_color: p.eye_color,
     hair_color: p.hair_color,
     skin_color: p.skin_color,
-    films: await getFilmsForCharacter(id),
+    films
   };
 };
 
-export const getPeople = async ({ page = 1, limit = 10,name = '' }) => {
-  const data = await fetchPeople({ page, limit,name });
+export const getPeople = async ({ page = 1, limit = 10, name = '' }) => {
+  const data = await fetchPeople({ page, limit, name });
 
   if (!data || (!data.results && !data.result)) {
     return {
