@@ -1,5 +1,7 @@
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_PEOPLE } from '../graphql/queries';
+import CharacterDetailModal from '../components/CharacterDetailModal';
 import {
   Pagination,
   CircularProgress,
@@ -7,17 +9,30 @@ import {
   CardContent,
   Typography,
   Divider,
-  Grid,
+  Grid,Avatar,
   Box,
 } from '@mui/material';
-import { LocationOn, Face,Movie } from '@mui/icons-material';
 
+import { Face, Wc, Event, Palette } from '@mui/icons-material';
 function CharacterList({ page, limit, name, onPageChange }) {
   const { loading, error, data } = useQuery(GET_PEOPLE, {
     variables: { page, limit, name },
   });
 
-  const handlePageChange = (_, value) => onPageChange(value);
+  const [selectedId, setSelectedId] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = (id) => {
+    console.log(id);
+    
+    setSelectedId(id);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedId(null);
+  };
 
   if (loading) {
     return (
@@ -28,103 +43,96 @@ function CharacterList({ page, limit, name, onPageChange }) {
   }
 
   if (error) {
-    return <p className="text-red-500 text-center">Error: {error.message}</p>;
+    return <Typography color="error" align="center">Error: {error.message}</Typography>;
   }
 
   return (
-    <div >
-      {/* Card Grid */}
+    <div>
+      {/* Grid of cards */}
       <Grid container spacing={2} className="flex justify-center items-center">
         {data.people.results.map((person) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={person.id}>
+          <Grid item xs={12} sm={6} md={6} lg={4} key={person?.id}>
             <Card
-             className="transition-transform duration-300"
-  sx={{
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    p: 2,
-    boxShadow: 3,
-    borderRadius: '1rem',
-    transition: 'transform 0.3s, box-shadow 0.3s',
-    '&:hover': {
-      transform: 'translateY(-6px)',
-      boxShadow: 6,
-    },
-  }}
-            >
-              <CardContent>
-                <Typography
-                  variant="h6"
-                  color="primary"
-                  sx={{ mb: 1, fontWeight: 600,width:200 }}
-                >
-                  {person.name}
-                </Typography>
-
-                <Divider sx={{ mb: 2 }} />
-
-                {/* Appearance */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                  >
-                    <Face fontSize="small" />
-                    Appearance
-                  </Typography>
-                  <Box sx={{ pl: 2, lineHeight: 1.9, fontSize: '0.95rem' }}>
-                    <Typography>Gender: <strong>{person.gender || 'Unknown'}</strong></Typography>
-                    <Typography>Birth Year: <strong>{person.birthYear || 'Unknown'}</strong></Typography>
-                    <Typography>Hair Color: <strong>{person.hair_color || 'Unknown'}</strong></Typography>
-                    <Typography>Eye Color: <strong>{person.eye_color || 'Unknown'}</strong></Typography>
-                    <Typography>Skin Color: <strong>{person.skin_color || 'Unknown'}</strong></Typography>
-                  </Box>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                {/* Origin */}
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                  >
-                    <LocationOn fontSize="small" />
-                    Origin
-                  </Typography>
-                  <Typography sx={{ pl: 2, fontSize: '0.95rem' }}>
-                    Homeworld: <strong>{person.homeworld || 'Unknown'}</strong>
-                  </Typography>
-                </Box>
-
-                {/* Films */}
-  <Divider sx={{ my: 2 }} />
-
-  <Box>
-    <Typography
-      variant="subtitle2"
-      color="text.secondary"
-      sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+      onClick={() => {
+        handleOpen(person?.id);
+        console.log(person?.id);
+      }}
+      sx={{
+        cursor: 'pointer',
+        borderRadius: '1.25rem',
+        p: 2,
+        height: '100%',
+        background: 'linear-gradient(145deg, #f5f5f5, #ffffff)',
+        boxShadow: '0 6px 18px rgba(0,0,0,0.05)',
+        transition: '0.3s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-8px)',
+          boxShadow: '0 10px 24px rgba(0,0,0,0.15)',
+        },
+      }}
     >
-      <Movie fontSize="small" />
-      Films
-    </Typography>
-    <Box sx={{ pl: 2, fontSize: '0.95rem', lineHeight: 1.7,height:130 }}>
-      {person.films?.length > 0 ? (
-        person.films.map((film, idx) => (
-          <Typography key={idx}>• {film}</Typography>
-        ))
-      ) : (
-        <Typography>Unknown</Typography>
-      )}
+      <CardContent>
+        {/* Name + Avatar */}
+        <Box display="flex" alignItems="center" mb={2}>
+          <Avatar
+            sx={{
+              bgcolor: '#1976d2',
+              color: 'white',
+              width: 48,
+              height: 48,
+              mr: 2,
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+            }}
+          >
+            {person?.name?.charAt(0)}
+          </Avatar>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              color: 'primary.main',
+              flexGrow: 1,
+              lineHeight: 1.2,
+              width:200
+            }}
+          >
+            {person?.name}
+          </Typography>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Info rows */}
+      <Grid container direction="column" spacing={1}>
+  <Grid item >
+    <Box display="flex" alignItems="center" gap={1}>
+      <Wc fontSize="small" sx={{ color: 'text.secondary' }} />
+      <Typography variant="body2">
+        <strong>Gender:</strong> {person?.gender || 'Unknown'}
+      </Typography>
     </Box>
-  </Box>
-              </CardContent>
-            </Card>
+  </Grid>
+  <Grid item >
+    <Box display="flex" alignItems="center" gap={1}>
+      <Palette fontSize="small" sx={{ color: 'text.secondary' }} />
+      <Typography variant="body2">
+        <strong>Skin:</strong> {person?.skin_color || 'Unknown'}
+      </Typography>
+    </Box>
+  </Grid>
+  <Grid item >
+    <Box display="flex" alignItems="center" gap={1}>
+      <Event fontSize="small" sx={{ color: 'text.secondary' }} />
+      <Typography variant="body2">
+        <strong>Birth Year:</strong> {person?.birthYear || 'Unknown'}
+      </Typography>
+    </Box>
+  </Grid>
+</Grid>
+
+      </CardContent>
+    </Card>
           </Grid>
         ))}
       </Grid>
@@ -134,10 +142,15 @@ function CharacterList({ page, limit, name, onPageChange }) {
         <Pagination
           count={data.people.totalPages}
           page={data.people.currentPage}
-          onChange={handlePageChange}
+          onChange={(_, value) => onPageChange(value)}
           color="primary"
         />
       </Box>
+
+      {/* Modal */}
+      {selectedId && (
+        <CharacterDetailModal open={open} handleClose={handleClose} id={selectedId} />
+      )}
     </div>
   );
 }

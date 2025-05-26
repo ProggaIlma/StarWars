@@ -10,12 +10,34 @@ export const GET_PEOPLE = gql`
         name
         gender
         birthYear
-        homeworld
+        skin_color
+        eye_color
+        hair_color
+       
+      }
+    }
+  }
+`;
+export const GET_PEOPLE_DETAIL = gql`
+query GET_PEOPLE_DETAIL($personId: Int!) {
+  person(id: $personId) {
+        id
+        name
+        gender
+        birthYear
         skin_color
         eye_color
         hair_color
         films
-      }
+        homeworld {
+      name
+      population
+      climate
+      terrain
+      gravity
+      diameter
     }
   }
+  
+}
 `;

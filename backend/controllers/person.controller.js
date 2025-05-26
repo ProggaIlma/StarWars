@@ -5,7 +5,7 @@ const BASE_URL = 'https://www.swapi.tech/api';
 
 const cache = new Map();
 
-const fetchNameFromUrl = async (url) => {
+const fetchHomeworldFromUrl = async (url) => {
   if (!url) return null;
   if (cache.has(url)) return cache.get(url);
 
@@ -13,13 +13,25 @@ const fetchNameFromUrl = async (url) => {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to fetch ${url}`);
     const data = await res.json();
-    const name = data.result.properties.name || data.result.properties.title || null;
-    cache.set(url, name);
-    return name;
+
+    const props = data.result?.properties ?? {};
+
+    const homeworldData = {
+      name: props.name || null,
+      population: props.population || null,
+      climate: props.climate || null,
+      terrain: props.terrain || null,
+      gravity: props.gravity || null,
+      diameter: props.diameter || null,
+    };
+
+    cache.set(url, homeworldData);
+    return homeworldData;
   } catch {
     return null;
   }
 };
+
 
 const getFilmsForCharacter = async (personId) => {
   try {
@@ -68,10 +80,10 @@ export const getPerson = async (id) => {
 
   const p = data.result.properties;
 
-  const [homeworld, films] = await Promise.all([
-    fetchNameFromUrl(p.homeworld),
-    getFilmsForCharacter(id)
-  ]);
+ const [homeworld, films] = await Promise.all([
+  fetchHomeworldFromUrl(p.homeworld),
+  getFilmsForCharacter(id)
+]);
 
   return {
     id,
@@ -85,7 +97,27 @@ export const getPerson = async (id) => {
     films
   };
 };
+export const getPersonforlist = async (id) => {
+  const data = await fetchPersonById(id);
 
+  if (!data?.result?.properties) {
+    throw new Error(`Invalid person response for ID: ${id}`);
+  }
+
+  const p = data.result.properties;
+
+  
+
+  return {
+    id,
+    name: p.name,
+    gender: p.gender,
+    birthYear: p.birth_year,
+    eye_color: p.eye_color,
+    hair_color: p.hair_color,
+    skin_color: p.skin_color,
+  };
+};
 export const getPeople = async ({ page = 1, limit = 10, name = '' }) => {
   const data = await fetchPeople({ page, limit, name });
 
@@ -99,17 +131,19 @@ export const getPeople = async ({ page = 1, limit = 10, name = '' }) => {
   }
 
   const rawList = data.results || data.result;
+console.log(rawList);
 
   const results = await Promise.all(
     rawList.map(async (item) => {
       try {
-        return await getPerson(item.uid);
+        return await getPersonforlist(item.uid);
       } catch (err) {
         console.error(`Failed to fetch full person data for UID ${item.uid}:`, err.message);
         return null;
       }
     })
   );
+console.log(results);
 
   return {
     results: results.filter(Boolean),

@@ -30,7 +30,7 @@ function App() {
 
 
         {/* Character List */}
-        <CharacterList page={page} limit={10} name={name} onPageChange={setPage} />
+        <CharacterList page={page} limit={6} name={name} onPageChange={setPage} />
       </main>
     </div>
   );
