@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { ApolloClient,InMemoryCache,ApolloProvider } from '@apollo/client'
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/',
+  uri: 'https://starwars-1-nvqt.onrender.com',
   cache: new InMemoryCache(),
 });
 

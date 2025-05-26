@@ -3,7 +3,6 @@ import films from '../data/films.js';
 
 const BASE_URL = 'https://www.swapi.tech/api';
 
-// Simple in-memory cache
 const cache = new Map();
 
 const fetchNameFromUrl = async (url) => {
@@ -24,13 +23,11 @@ const fetchNameFromUrl = async (url) => {
 
 const getFilmsForCharacter = async (personId) => {
   try {
-    //const res = await fetch(`${BASE_URL}/films`);
- //   const data = await res.json();
-    //const allFilms = films.result;
+
 
     const personUrl = `${BASE_URL}/people/${personId}`;
     
-    // No need to refetch film details
+   
     return films
       .filter(film => film.properties?.characters.includes(personUrl))
       .map(film => film.properties.title);
@@ -71,7 +68,6 @@ export const getPerson = async (id) => {
 
   const p = data.result.properties;
 
-  // Run homeworld and films in parallel
   const [homeworld, films] = await Promise.all([
     fetchNameFromUrl(p.homeworld),
     getFilmsForCharacter(id)

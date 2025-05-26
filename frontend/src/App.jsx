@@ -15,18 +15,19 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4">
         {/* Top Bar: Search on Right */}
-        <div className="flex justify-end mb-6 mr-17">
-          <input
-            type="text"
-            placeholder="Search characters..."
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setPage(1);
-            }}
-            className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+       <div className="flex justify-center xl:justify-end mb-6 xl:mr-[3.75rem]">
+  <input
+    type="text"
+    placeholder="Search characters..."
+    value={name}
+    onChange={(e) => {
+      setName(e.target.value);
+      setPage(1);
+    }}
+    className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+</div>
+
 
         {/* Character List */}
         <CharacterList page={page} limit={10} name={name} onPageChange={setPage} />
