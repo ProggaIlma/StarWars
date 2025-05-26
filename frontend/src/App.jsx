@@ -15,7 +15,7 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4">
         {/* Top Bar: Search on Right */}
-       <div className="flex justify-center xl:justify-end mb-6 xl:mr-[3.75rem]">
+       <div className="flex justify-center  mb-6 ">
   <input
     type="text"
     placeholder="Search characters..."
