@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import films from '../data/films.json' assert { type: 'json' };
+import films from '../data/films.json';
 
 const BASE_URL = 'https://www.swapi.tech/api';
 
