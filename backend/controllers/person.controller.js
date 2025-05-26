@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import films from '../data/films.json';
+import films from '../data/films.js';
 
 const BASE_URL = 'https://www.swapi.tech/api';
 
@@ -26,12 +26,12 @@ const getFilmsForCharacter = async (personId) => {
   try {
     //const res = await fetch(`${BASE_URL}/films`);
  //   const data = await res.json();
-    const allFilms = films.result;
+    //const allFilms = films.result;
 
     const personUrl = `${BASE_URL}/people/${personId}`;
     
     // No need to refetch film details
-    return allFilms
+    return films
       .filter(film => film.properties?.characters.includes(personUrl))
       .map(film => film.properties.title);
   } catch {
